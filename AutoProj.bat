@@ -2,14 +2,14 @@
 
 ::license
               
-echo     [96m _____ ---------------------------------------------
-echo     ^|   __^|---------------------------------------------
-echo     ^|  ^|_   _________ ----------------------------------
-echo     ^|   _^| ^|___   ___^|----------------------------------
-echo     ^|  ^|__     ^| ^|--------------------------------------
-echo     ^|_____^|    ^| ^|--------------------------------------
-echo                ^| ^|--------------------------------------
-echo                ^|_^|-------------------------------------- [0m
+echo     [96m----- _____ ----------------------------------------
+echo     -----^|   __^|----------------------------------------
+echo     -----^|  ^|_   _________ -----------------------------
+echo     -----^|   _^| ^|___   ___^|-----------------------------
+echo     -----^|  ^|__-----^| ^|---------------------------------
+echo     -----^|_____^|----^| ^|---------------------------------
+echo     ----------------^| ^|---------------------------------
+echo     ----------------^|_^|--------------------------------- [0m
 echo     Copyright 2021-08-15 Edward Kyle Thomas Jr.
 echo     This program is free software: you can redistribute it and/or modify
 echo     it under the terms of the GNU General Public License as published by
@@ -46,9 +46,12 @@ for /f "tokens=*" %%g in ('powershell -sta "add-type -as System.Windows.Forms; [
 set "origin=C:\Users\kedwa\Desktop\NDrive\"Web Service"\"
 set /p carrier="Enter carrier name: "
 set /p st="Enter State Abbrv: "
+set /p _ct="Enter County: "
 
 cd /d "%origin%%carrier%\%st%"
 set "_path=%cd%"
+
+if defined _ct ( goto :check_for_county )
 
 :: Begin 
 
@@ -117,7 +120,8 @@ goto :start
         start %SystemRoot%\explorer.exe "!cd!"
     ) 
     if %county_number% gtr 1 ( 
-        echo The user-entered county [92m"%ct%"[0m returned [91m%county_number%[0m matches. Please specify more detail by viewing the above directory names.
+        echo The user-entered county [92m"%ct%"[0m returned [91m%county_number%[0m matches. 
+        echo Please specify more detail by viewing the above directory names.
         goto :yes
     ) 
     
@@ -132,9 +136,35 @@ goto :start
 
 exit /b 0
 
-:start
+:check_recursive
+set /p _ct="Enter County: "
+set /a _county_number=0
+set "_county="
 
-:: 1234567
+:: 12345678
+
+:check_for_county
+
+for /f "delims=" %%B in ( 'dir "%_path%" /b ^| findstr /i %_ct%' ) do (
+    echo [96m%%B[0m
+    set /a "_county_number+=1"
+    set "_county=%%B"
+)
+
+if %_county_number%==1 ( 
+    cd %_county%
+    goto :start
+) else (
+    if %_county_number%==0 ( 
+        echo Did not find matching directory. Please try again...
+    ) else (
+        echo The user-entered county [92m"%_ct%"[0m returned [91m%_county_number%[0m matches. 
+        echo Please specify more detail by viewing the above directory names.
+    )
+    goto :check_recursive
+)
+
+:start
 
 for /f "delims=" %%D in ( 'dir "%_path%" /s /b ^| findstr /i %clip_board%' ) do (
     if exist %%D (
@@ -144,7 +174,9 @@ for /f "delims=" %%D in ( 'dir "%_path%" /s /b ^| findstr /i %clip_board%' ) do 
     )
 )
 
-call :CreateFile
+if not defined _county call :CreateFile
+
+echo %cd%
 
 pause
 echo FOR TESTING
