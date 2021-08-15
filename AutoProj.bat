@@ -62,9 +62,6 @@ goto :start
     set /a county_number=0
     set "county="
 
-    REM cd %_path%%ct%
-    REM set "var=%cd%"
-
     for /f "delims=" %%C in ( 'dir "%_path%" /b ^| findstr /i %ct%' ) do (
         echo [96m%%C[0m
         set /a "county_number+=1"
