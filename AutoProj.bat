@@ -1,15 +1,15 @@
 @echo off
 
 ::license
-              
-echo     [96m----- _____ ----------------------------------------
-echo     -----^|   __^|----------------------------------------
-echo     -----^|  ^|_   _________ -----------------------------
-echo     -----^|   _^| ^|___   ___^|-----------------------------
-echo     -----^|  ^|__-----^| ^|---------------------------------
-echo     -----^|_____^|----^| ^|---------------------------------
-echo     ----------------^| ^|---------------------------------
-echo     ----------------^|_^|--------------------------------- [0m
+
+echo     [93m-----[0m[96m _____[0m [93m----------------------------------------[0m
+echo     [93m-----[0m[96m^|   __^|[0m[93m----------------------------------------[0m
+echo     [93m-----[0m[96m^|  ^|_   _________[0m [93m-----------------------------[0m
+echo     [93m-----[0m[96m^|   _^| ^|___   ___^|[0m[93m-----------------------------[0m
+echo     [93m-----[0m[96m^|  ^|___[0m[93m----[0m[96m^| ^|[0m[93m---------------------------------[0m
+echo     [93m-----[0m[96m^|______^|[0m[93m---[0m[96m^| ^|[0m[93m---------------------------------[0m
+echo     [93m----------------[0m[96m^| ^|[0m[93m---------------------------------[0m
+echo     [93m----------------[0m[96m^|_^|[0m[93m---------------------------------[0m
 echo     Copyright 2021-08-15 Edward Kyle Thomas Jr.
 echo     This program is free software: you can redistribute it and/or modify
 echo     it under the terms of the GNU General Public License as published by
@@ -22,10 +22,10 @@ echo     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 echo     GNU General Public License for more details.
 echo                                                                   -
 echo     You should have received a copy of the GNU General Public License
-echo     along with this program.  If not, see ^<https://www.gnu.org/licenses/^>.
+echo     along with this program.  If not, see ^<[4mhttps://www.gnu.org/licenses/[0m^>.
 echo                                                                   -
 echo     Along with the above resourses, one can find original GNU Licensing
-echo     at the original GitHub repository ^<https://github.com/thom8047/FileCOAuto/^>. 
+echo     at the original GitHub repository ^<[4mhttps://github.com/thom8047/FileCOAuto/[0m^>. 
 echo     [91m------------------------------------------------------------------------[0m 
 
 goto :after_color_comment
@@ -37,16 +37,24 @@ goto :after_color_comment
     [95mMagenta[0m
     [96mCyan[0m
     [97mWhite[0m
-    special characters [91mRed[0m
+    special characters [?m
 :after_color_comment
+
+for /f "tokens=*" %%g in ('powershell -sta "add-type -as System.Windows.Forms; [windows.forms.clipboard]::GetText()"') do (set clip_board=%%g)
+
+echo Make sure your Project ID is currently in your clipboard [e.g. Ctrl-C the proj-id]
+echo before entering the county below.
+echo Current clipboard: "[92m%clip_board%[0m"
+echo(
 
 :: Set global variables
 
-for /f "tokens=*" %%g in ('powershell -sta "add-type -as System.Windows.Forms; [windows.forms.clipboard]::GetText()"') do (set clip_board=%%g)
 set "origin=C:\Users\kedwa\Desktop\NDrive\"Web Service"\"
 set /p carrier="Enter carrier name: "
 set /p st="Enter State Abbrv: "
 set /p _ct="Enter County: "
+
+for /f "tokens=*" %%g in ('powershell -sta "add-type -as System.Windows.Forms; [windows.forms.clipboard]::GetText()"') do (set clip_board=%%g)
 
 cd /d "%origin%%carrier%\%st%"
 set "_path=%cd%"
@@ -83,13 +91,20 @@ goto :start
 :CreateFile
     setlocal ENABLEDELAYEDEXPANSION
 
+    echo(
     echo Project ID: [92m%clip_board%[0m does not have a corresponding file. Would you like to create one?
+    echo(
 
     :try
     call :GetUserInputs "Enter [Y/N]: "
 
     :yes
-    set /p ct="Enter County: "
+    if defined _county ( 
+        set "county=%_county%" 
+        set /a "county_number=1"
+        goto :finish
+    ) 
+    set /p ct="County was not assigned, please enter county: "
     set /a county_number=0
     set "county="
 
@@ -98,34 +113,38 @@ goto :start
         set /a "county_number+=1"
         set "county=%%C"
     )
+
+    :finish
+    echo(
+    
     if %county_number%==0 ( 
         echo Did not find matching directory. Please try again...
         goto :yes 
     ) 
-    if %county_number%==1 ( 
+    if %county_number%==1 (
         cd %county% 
         cd "projects"
         echo This is your current path: [93m!cd![0m
         echo This will be your project folders name: "[4m[92mM%clip_board%[0m"
-
-        echo [91m~-~-~ NOTES ~-~-~[0m
+        echo(
+        echo [91m----- NOTES -----[0m
         echo Please view the current path listed, if the path is wrong
         echo just exit out of window. If the path is correct, but the naming 
         echo convention is wrong, continue on and rename the folder
         echo as needed.
-        echo [91m----- NOTES -----[0m
+        echo [91m-----------------[0m
 
         pause
         mkdir "M%clip_board%" && cd "M%clip_board%"
         start %SystemRoot%\explorer.exe "!cd!"
+
+        goto :checkout
     ) 
     if %county_number% gtr 1 ( 
         echo The user-entered county [92m"%ct%"[0m returned [91m%county_number%[0m matches. 
-        echo Please specify more detail by viewing the above directory names.
+        echo Please specify which folder from the directory names.
         goto :yes
     ) 
-    
-    exit
 
     :no
     echo n
@@ -151,6 +170,8 @@ for /f "delims=" %%B in ( 'dir "%_path%" /b ^| findstr /i %_ct%' ) do (
     set "_county=%%B"
 )
 
+echo(
+
 if %_county_number%==1 ( 
     cd %_county%
     goto :start
@@ -159,8 +180,9 @@ if %_county_number%==1 (
         echo Did not find matching directory. Please try again...
     ) else (
         echo The user-entered county [92m"%_ct%"[0m returned [91m%_county_number%[0m matches. 
-        echo Please specify more detail by viewing the above directory names.
+        echo Please specify which folder from the directory names.
     )
+    echo(
     goto :check_recursive
 )
 
@@ -174,9 +196,11 @@ for /f "delims=" %%D in ( 'dir "%_path%" /s /b ^| findstr /i %clip_board%' ) do 
     )
 )
 
-if not defined _county call :CreateFile
+call :CreateFile
 
 echo %cd%
 
-pause
+
+:checkout
 echo FOR TESTING
+exit
