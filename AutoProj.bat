@@ -104,6 +104,7 @@ goto :start
         set /a "county_number=1"
         goto :finish
     ) 
+    echo(
     set /p ct="County was not assigned, please enter county: "
     set /a county_number=0
     set "county="
