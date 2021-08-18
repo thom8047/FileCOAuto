@@ -49,7 +49,7 @@ echo(
 
 :: Set global variables
 
-set "origin=N:\"Wireless Service Providers"\"
+set "origin=C:\Users\kedwa\Desktop\NDrive\"Web Service"\"
 set /p carrier="Enter Carrier Folder name: "
 set /p st="Enter State Folder name: "
 set /p _ct="Enter County Folder name: "
@@ -113,6 +113,15 @@ goto :start
 
     pause
     mkdir "M%clip_board%" && cd "M%clip_board%"
+
+    :: save file to text
+    echo %clip_board%:"!cd!" > C:\Users\kedwa\Desktop\tmp_project_loc.txt
+    type C:\Users\kedwa\Desktop\project_loc.txt >> C:\Users\kedwa\Desktop\tmp_project_loc.txt
+    type C:\Users\kedwa\Desktop\tmp_project_loc.txt > C:\Users\kedwa\Desktop\project_loc.txt
+
+    :: del tmp_file
+    del C:\Users\kedwa\Desktop\tmp_project_loc.txt
+
     start %SystemRoot%\explorer.exe "!cd!"
 
     goto :checkout
@@ -129,7 +138,7 @@ exit /b 0
 :check_recursive
 set /p _ct="County was not assigned, please enter county: "
 
-:: 12345678
+:: 123456
 
 :check_for_county
 
@@ -144,7 +153,7 @@ for /f "delims=" %%B in ( 'dir "%_path%" /a:D /b ^| findstr /i /r /c:"%_ct%"' ) 
 
 if %_county_number%==1 ( 
     cd %_county%
-    cd "*projects"
+    cd "*projects*"
     goto :start
 ) else (
     if %_county_number%==0 ( 
