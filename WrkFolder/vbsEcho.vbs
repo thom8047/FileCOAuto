@@ -1,0 +1,1 @@
+WScript.StdOut.Write(chr(8) & WScript.Arguments(0))
